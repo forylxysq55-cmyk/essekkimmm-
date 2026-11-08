@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Çiçeği Herkes Alır Hayatım</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #05020a;
+      font-family: 'Caveat', cursive;
+      position: relative;
+    }
+
+    /* Üst Yazı */
+    .title {
+      position: absolute;
+      top: 5%;
+      left: 50%;
+      transform: translateX(-50%);
+      color: #bb66ff;
+      font-size: 2.2rem;
+      text-align: center;
+      width: 90%;
+      z-index: 10;
+      text-shadow: 0 0 12px rgba(187, 102, 255, 0.8), 0 0 25px rgba(147, 51, 234, 0.5);
+      pointer-events: none;
+      user-select: none;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 1;
+    }
+
+    /* Dokunma Kalpleri */
+    .heart {
+      position: absolute;
+      color: #c084fc;
+      font-size: 20px;
+      pointer-events: none;
+      user-select: none;
+      animation: heartAnim 1.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+      transform-origin: center center;
+      text-shadow: 0 0 10px rgba(192, 132, 252, 0.9);
+      z-index: 20;
+    }
+
+    @keyframes heartAnim {
+      0% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(0.3);
+      }
+      50% {
+        opacity: 0.9;
+        transform: translate(-50%, -60px) scale(1.5);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(-50%, -110px) scale(2.3);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <h1 class="title">Çiçeği herkes alır hayatım</h1>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    let w, h;
+    let stars = [];
+
+    function init() {
+      w = canvas.width = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      h = canvas.height = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+      
+      // Yıldızlar
+      stars = [];
+      const count = Math.floor((w * h) / 3500);
+      for (let i = 0; i < count; i++) {
+        stars.push({
+          x: Math.random() * w,
+          y: Math.random() * h,
+          r: Math.random() * 1.4 + 0.3,
+          a: Math.random() * 0.7 + 0.3
+        });
+      }
+
+      draw();
+    }
+
+    function drawStars() {
+      ctx.fillStyle = '#ffffff';
+      stars.forEach(s => {
+        ctx.globalAlpha = s.a;
+        ctx.beginPath();
+        ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      ctx.globalAlpha = 1;
+    }
+
+    // Az sayıda mor otlar
+    function drawGrass() {
+      const grassCount = Math.min(10, Math.floor(w / 40));
+      ctx.strokeStyle = '#2e1065';
+      ctx.lineWidth = 3;
+      ctx.lineCap = 'round';
+
+      for (let i = 0; i < grassCount; i++) {
+        const x = (w / (grassCount + 1)) * (i + 1);
+        const gh = 90 + (i % 3) * 30;
+        const curve = (i % 2 === 0 ? 1 : -1) * 35;
+
+        ctx.beginPath();
+        ctx.moveTo(x, h);
+        ctx.quadraticCurveTo(x + curve, h - gh / 2, x + curve * 1.2, h - gh);
+        ctx.stroke();
+      }
+    }
+
+    // Lale/Gonca Tipi Işıltılı Mor Çiçek
+    function drawGlowTulip(cx, cy, scale, isStar) {
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.scale(scale, scale);
+
+      ctx.shadowColor = '#a855f7';
+      ctx.shadowBlur = 18;
+
+      // Dış Taç Yapraklar
+      ctx.fillStyle = isStar ? '#9333ea' : '#7e22ce';
+      
+      // Sol Yaprak
+      ctx.beginPath();
+      ctx.arc(-10, -5, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Sağ Yaprak
+      ctx.beginPath();
+      ctx.arc(10, -5, 14, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Orta Ana Çanak Yaprak
+      ctx.beginPath();
+      ctx.fillStyle = isStar ? '#c084fc' : '#a855f7';
+      ctx.arc(0, 2, 15, 0, Math.PI * 2);
+      ctx.fill();
+
+      // İç Işık Halesi
+      ctx.beginPath();
+      ctx.fillStyle = '#e9d5ff';
+      ctx.arc(0, -2, 6, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Yıldızlı Çiçek ise Ortasına Yıldız Çiz
+      if (isStar) {
+        ctx.fillStyle = '#ffffff';
+        ctx.shadowColor = '#ffffff';
+        ctx.shadowBlur = 12;
+        ctx.beginPath();
+        for (let i = 0; i < 4; i++) {
+          ctx.rotate(Math.PI / 2);
+          ctx.lineTo(0, 10);
+          ctx.quadraticCurveTo(0, 0, 3, 0);
+        }
+        ctx.fill();
+      }
+
+      ctx.restore();
+    }
+
+    // Yoğun Demet Çizimi
+    function drawBouquet() {
+      const centerX = w / 2;
+      const startY = h + 20;
+
+      // Saplar
+      const stems = [
+        { x: centerX, y: h * 0.38, scale: 1.1, star: true },
+        { x: centerX - 35, y: h * 0.44, scale: 0.95, star: false },
+        { x: centerX + 35, y: h * 0.43, scale: 0.95, star: true },
+        { x: centerX - 65, y: h * 0.50, scale: 0.85, star: false },
+        { x: centerX + 65, y: h * 0.49, scale: 0.85, star: false },
+        { x: centerX - 25, y: h * 0.54, scale: 0.9, star: true },
+        { x: centerX + 25, y: h * 0.53, scale: 0.9, star: false },
+        { x: centerX - 85, y: h * 0.60, scale: 0.75, star: true },
+        { x: centerX + 85, y: h * 0.58, scale: 0.75, star: false },
+        { x: centerX, y: h * 0.62, scale: 0.8, star: false }
+      ];
+
+      ctx.strokeStyle = '#581c87';
+      ctx.lineWidth = 2.5;
+
+      // Sap çizgileri
+      stems.forEach(s => {
+        ctx.beginPath();
+        ctx.moveTo(centerX, startY);
+        ctx.quadraticCurveTo(
+          centerX + (s.x - centerX) * 0.4,
+          startY - (startY - s.y) * 0.5,
+          s.x,
+          s.y
+        );
+        ctx.stroke();
+      });
+
+      // Çiçek başları
+      stems.forEach(s => {
+        drawGlowTulip(s.x, s.y, s.scale, s.star);
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, w, h);
+      drawStars();
+      drawGrass();
+      drawBouquet();
+    }
+
+    // Tıklama / Dokunma Kalpleri
+    function spawnHeart(e) {
+      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+
+      const heart = document.createElement('div');
+      heart.className = 'heart';
+      heart.innerHTML = '♥';
+      heart.style.left = `${clientX}px`;
+      heart.style.top = `${clientY}px`;
+
+      document.body.appendChild(heart);
+
+      setTimeout(() => heart.remove(), 1200);
+    }
+
+    // Event Dinleyicileri
+    window.addEventListener('resize', init);
+    window.addEventListener('click', spawnHeart);
+    window.addEventListener('touchstart', spawnHeart, { passive: true });
+
+    // Sayfa tamamen yüklendiğinde çizimi garantiye al
+    window.onload = init;
+    init();
+    setTimeout(init, 300);
+  </script>
+</body>
+</html>
